@@ -1,0 +1,11 @@
+.footer {
+	position: sticky;
+	bottom: 0;
+	width: 100%;
+	display: flex;
+	padding: 1rem;
+	flex-direction: row;
+	background: var(--bg);
+	justify-content: space-evenly;
+	border-top: solid 1pt currentColor;
+}

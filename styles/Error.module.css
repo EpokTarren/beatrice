@@ -1,0 +1,7 @@
+.error {
+	width: 100%;
+	border: solid 2pt hsl(0, 90%, 60%);
+	padding: 2em;
+	background: hsla(0, 90%, 60%, 30%);
+	border-radius: 0.5em;
+}

@@ -12,11 +12,15 @@ export default NextAuth({
 	callbacks: {
 		async signIn({ user }) {
 			user.email = undefined;
-			return allowSignUp || (await prisma.user.findUnique({ where: { id: user.id } })) !== null;
+			return (
+				!user.banned &&
+				(allowSignUp || (await prisma.user.findUnique({ where: { id: user.id } })) !== null)
+			);
 		},
 
 		async session({ session, user }) {
-			return { ...session, username: user.username, uid: user.id };
+			const banned = user.banned || undefined;
+			return { ...session, username: user.username, uid: user.id, admin: user.admin, banned };
 		},
 	},
 

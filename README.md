@@ -71,8 +71,15 @@ cd beatrice
 yarn install --frozen-lockfile
 
 # you need DATABASE_URL url in your enviorment
-# ex: postgresql://user:password@localhost:5432/betty
-yarn db
+
+# Unix
+export "DATABASE_URL=postgresql://user:password@localhost:port/db"
+
+# Windows
+set "DATABASE_URL=postgresql://user:password@localhost:port/db"
+
+yarn db:gen
+yarn db:push
 
 # generates license file
 yarn deps
@@ -119,11 +126,18 @@ git clone https://github.com/EpokTarren/beatrice.git
 
 cd beatrice
 
+# build and run the main container on port 3000
 docker build -t beatrice .
 docker run -p 3000:3000 --env-file .env.local -d --name beatrice beatrice
 
+# build and run the file server container on port 3001
 docker build -f ./files/Dockerfile -t beatrice-files .
 docker run -p 3001:3001 --env-file .env.local -d --name beatrice-files beatrice-files
+
+# to set or revoke a users admin rights run
+docker exec -it beatrice-files /bin/sh
+node set_admin.js # follow the instructions, re-run for multiple admins
+exit # finally exit
 ```
 
 #### Manual
@@ -151,4 +165,7 @@ set "DATABASE_URL=postgresql://user:password@localhost:port/db"
 yarn start
 
 node files/build/files/server.js
+
+# to set or revoke a users admin rights run
+node set_admin.js
 ```

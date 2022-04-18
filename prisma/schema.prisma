@@ -35,15 +35,29 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?    @unique
   emailVerified DateTime?
-  username      String?   @unique
+  username      String?    @unique
   image         String?
+  admin         Boolean    @default(false)
+  banned        Boolean    @default(false)
+  bannedAt      DateTime?
   accounts      Account[]
   sessions      Session[]
   File          File[]
+  BannedIPs     BannedIP[]
+}
+
+model BannedIP {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  expiredAt DateTime?
+  active    Boolean   @default(true)
+  ip        String
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
 }
 
 model VerificationToken {

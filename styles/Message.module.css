@@ -30,14 +30,18 @@
 	}
 }
 
+.confirmation,
 .message {
 	position: relative;
 	width: 100%;
 	padding: 1em;
 	border-radius: 0.5em;
 	background: var(--bg);
-	animation: height var(--time) linear 0ms 1;
 	margin: 0;
+}
+
+.message {
+	animation: height var(--time) linear 0ms 1;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -1,4 +1,4 @@
-import { SessionProvider, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { FunctionComponent } from 'react';
 import type { NextPage } from 'next';
 

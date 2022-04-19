@@ -10,8 +10,8 @@ export interface Success {
 
 export type Output = Success | EndpointError;
 
-export default endpoint(['GET', 'DELETE'], async (req, res: NextApiResponse<Output>, session) => {
-	if (!session.admin)
+export default endpoint(['GET', 'DELETE'], async (req, res: NextApiResponse<Output>, { admin }) => {
+	if (!admin)
 		return res
 			.status(403)
 			.json({ code: 403, message: 'You need to be an administrator to view this page' });

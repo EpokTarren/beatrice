@@ -70,7 +70,7 @@ const Admin: NextPage = () => {
 			res.ok ? search() : setErr(await res.json()),
 		);
 
-	const ipBan = (ip: string) => () => setErr({ message: 'Unimplemented' });
+	const ipBan = (_ip: string) => () => setErr({ message: 'Unimplemented' });
 
 	const eventHandler = (event: 'ban' | 'unban' | 'deleteContent' | 'banIp') => {
 		switch (event) {

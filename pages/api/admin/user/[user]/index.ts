@@ -1,6 +1,6 @@
 import { User } from '@prisma/client';
-import { prisma } from '../../../../../lib/prisma';
 import type { NextApiResponse } from 'next';
+import { prisma } from '../../../../../lib/prisma';
 import { adminEndpoint, EndpointError } from '../../../../../lib/endpoint';
 
 export interface Success {
@@ -10,7 +10,7 @@ export interface Success {
 
 export type Output = Success | EndpointError;
 
-export default adminEndpoint(['GET'], async (req, res: NextApiResponse<Output>, _, username) => {
+export default adminEndpoint(['GET'], async (_req, res: NextApiResponse<Output>, _, username) => {
 	await prisma.user
 		.findUnique({ where: { username } })
 		.then((user) =>

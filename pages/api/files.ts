@@ -10,7 +10,7 @@ export interface Success {
 
 export type Output = Success | EndpointError;
 
-export default endpoint(['GET'], async (req, res: NextApiResponse<Output>, session) => {
+export default endpoint(['GET'], async (_req, res: NextApiResponse<Output>, session) => {
 	await prisma.file
 		.findMany({
 			where: { userId: session.uid },

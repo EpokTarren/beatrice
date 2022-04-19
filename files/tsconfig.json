@@ -5,6 +5,8 @@
 		"skipLibCheck": true,
 		"strict": true,
 		"outDir": "build",
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
 		"esModuleInterop": true,
 		"module": "CommonJS",
 		"moduleResolution": "node"

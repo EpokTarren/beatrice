@@ -1,5 +1,4 @@
 import { prisma } from '../../lib/prisma';
-import { getSession } from 'next-auth/react';
 import { endpoint, EndpointError } from '../../lib/endpoint';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -13,10 +12,10 @@ export type Output = Success | EndpointError;
 
 export default endpoint(
 	['GET'],
-	async (req: NextApiRequest, res: NextApiResponse<Output>, session) => {
+	async (_req: NextApiRequest, res: NextApiResponse<Output>, { uid }) => {
 		await prisma.account
 			.findMany({
-				where: { userId: session.uid },
+				where: { userId: uid },
 				select: { provider: true },
 			})
 			.then(async (accounts) =>

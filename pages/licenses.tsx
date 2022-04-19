@@ -1,6 +1,5 @@
 import type { NextPage } from 'next';
 import { packages } from '../lib/licenses';
-import { Footer } from '../components/footer';
 
 export const Licenses: NextPage = () => {
 	const repo = (url?: string) =>

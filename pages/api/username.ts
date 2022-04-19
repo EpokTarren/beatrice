@@ -1,7 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
-import { endpoint, EndpointError } from '../../lib/endpoint';
 import { prisma } from '../../lib/prisma';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { endpoint, EndpointError } from '../../lib/endpoint';
 
 export interface Success {
 	code: number;

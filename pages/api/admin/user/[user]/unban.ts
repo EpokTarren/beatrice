@@ -10,7 +10,7 @@ export interface Success {
 
 export type Output = Success | EndpointError;
 
-export default adminEndpoint(['PATCH'], async (req, res: NextApiResponse<Output>, _, username) => {
+export default adminEndpoint(['PATCH'], async (_req, res: NextApiResponse<Output>, _, username) => {
 	await prisma.user
 		.update({ where: { username }, data: { banned: false, bannedAt: null } })
 		.then((user) =>

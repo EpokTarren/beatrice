@@ -8,7 +8,7 @@ export interface Success {
 
 export type Output = Success | EndpointError;
 
-export default adminEndpoint(['DELETE'], async (req, res: NextApiResponse<Output>, _, username) => {
+export default adminEndpoint(['DELETE'], async (_r, res: NextApiResponse<Output>, _, username) => {
 	await prisma.user
 		.findUnique({ where: { username }, select: { id: true } })
 		.then(async (user) =>

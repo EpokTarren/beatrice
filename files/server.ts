@@ -5,11 +5,10 @@ dotenv.config({ path: join(__dirname, '../../../.env.local') }).parsed;
 
 const port = Number(process.env['PORT'] || 3001);
 const user = process.env['BEATRICE_FILES_USER'];
-const prefix = user ? `/${user}` : '';
 
-import { createServer } from 'http';
 import { prisma } from '../lib/prisma';
 import { contentType } from '../lib/contentType';
+import { createServer, IncomingMessage, ServerResponse } from 'http';
 
 const errorPage = `<!DOCTYPE html>
 <html lang="en">
@@ -38,9 +37,7 @@ const errorPage = `<!DOCTYPE html>
 	</body>
 </html>`.replace(/\t|\n/g, '');
 
-createServer(async (req, res) => {
-	const url = prefix + req.url;
-
+const respond = async (res: ServerResponse, url?: string, error = true) => {
 	if (url) {
 		const file = await prisma.file.findUnique({ where: { url }, select: { content: true } });
 
@@ -48,13 +45,28 @@ createServer(async (req, res) => {
 			res
 				.writeHead(200, { 'Content-Type': contentType(url.split('/').pop() || '') })
 				.write(file.content);
-			res.end();
-
-			return;
+			return new Promise((resolve) => res.end(resolve));
 		}
 	}
 
-	res.writeHead(404, { 'Content-Type': 'text/html' });
-	res.write(errorPage);
-	res.end();
-}).listen(port);
+	if (error) {
+		res.writeHead(404, { 'Content-Type': 'text/html' }).write(errorPage);
+		res.end();
+	}
+};
+
+const parseUrl = (url?: string): string | undefined =>
+	url?.match(/^(\/[^\/\s\n]+\/[^\/\s\n]+)\/?$/)?.[1];
+
+const handler: (req: IncomingMessage, res: ServerResponse) => void = user
+	? (() => {
+			const prefix = `/${user}`;
+
+			return async (req, res) => {
+				if (req.url) await respond(res, parseUrl(prefix + req.url), false);
+				if (!res.writableEnded) respond(res, parseUrl(req.url));
+			};
+	  })()
+	: (req, res) => respond(res, parseUrl(req.url));
+
+createServer(handler).listen(port);

@@ -47,6 +47,10 @@ _Note: for all configuration replace `http://localhost:3001` with your url for t
 You can generate `NEXTAUTH_SECRET` using `openssl rand -base64 32`,
 on Windows git ships with openssl, hence run `"C:\Program Files\Git\usr\bin\openssl.exe" rand -base64 32`.
 
+`BEATRICE_FILES_PORT` sets the port for the file only server
+
+`BEATRICE_FILES_USER` sets a user, whose files will be served on the file only server at host/file.ext as well as host/user/file.ext.
+
 [discord]: https://discord.com/
 [developers/applications]: https://discord.com/developers/applications
 
@@ -60,7 +64,7 @@ Add a redirect to `http://localhost:3000/api/auth/callback/discord`.
 For [GitHub] oauth provider go to [Settings/Developer settings/OAuth Apps][github_oauth] on [GitHub] and register a new application.
 Set your Authorization callback URL to `http://localhost:3000/api/auth/callback/github` and Homepage URL to `http://localhost:3000/`.
 
-### Development
+## Development
 
 [http://localhost:3000]: http://localhost:3000
 
@@ -93,7 +97,7 @@ yarn dev
 
 Open [http://localhost:3000] with your browser to see the result.
 
-### Installation
+## Installation
 
 [nginx]: https://www.nginx.com/
 [revese proxy]: https://en.wikipedia.org/wiki/Reverse_proxy
@@ -109,41 +113,55 @@ It is however not recommended to do this without HTTPS see [this article][articl
 
 To serve to whole site at `domain.tld` over HTTP do:
 
-_Note: it is recommended to only serve the full site locally, especially if signups are on, you do not want strangers to use your server to host maliocious or illegal content._
+_Note: it is recommended to only serve the full site on youre local network, especially if signups are on, you do not want strangers to use your server to host maliocious or illegal content._
+_Instead serve your files publically using the file only server_
 
-To host only the files at `media.domain.tld` you can put the file only server behind a reverse proxy.
-
-```bash
-# set BEATRICE_FILES_PORT to choose a port for FILES server
-# to serve a users files at host/file instead of host/user/file
-# set BEATRICE_FILES_USER
-yarn files
-```
-
-#### Docker
+### Docker
 
 This section requires [Docker] to be installed.
+
+You should not set a `DATABASE_URL` in `.env.local` if using the below since this will be done for you, the database will not be exposed over the network.
+
+_Note: if you already have a postgresql server you wish to use, remove postgres block as well as the `depends_on` blocks from the other containers, and do set `DATABASE_URL`._
 
 ```bash
 git clone https://github.com/EpokTarren/beatrice.git
 
 cd beatrice
 
-# build and run the main container on port 3000
-docker build -t beatrice .
-docker run -p 3000:3000 --env-file .env.local -d --name beatrice beatrice
+docker-compose up -d --build
 
-# build and run the file server container on port 3001
-docker build -f ./files/Dockerfile -t beatrice-files .
-docker run -p 3001:3001 --env-file .env.local -d --name beatrice-files beatrice-files
+# initialize the database
+docker exec -it beatrice-files /bin/sh
+yarn prisma db push
+exit
 
 # to set or revoke a users admin rights run
 docker exec -it beatrice-files /bin/sh
 node set_admin.js # follow the instructions, re-run for multiple admins
-exit # finally exit
+exit
+
+# if you don't want a file only server
+docker pause beatrice-files
+
+# if you make changes to your .env.local file simply restart
+docker-compose restart
 ```
 
-#### Manual
+#### Updating
+
+```bash
+docker-compose build
+docker-compose restart
+
+# run database migrations
+docker exec -it beatrice-files /bin/sh
+# migrations
+yarn prisma migrate deploy
+exit
+```
+
+### Manual
 
 This section requires [Node.js]; [yarn]; and a [Postgresql] server.
 

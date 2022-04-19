@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    container_name: postgres-beatrice
+    networks:
+      - beatrice_network
+    environment:
+      - POSTGRES_PASSWORD=postgres
+
+  beatrice:
+    build: .
+    container_name: beatrice
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/beatrice
+    env_file:
+      - .env.local
+    networks:
+      - beatrice_network
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+
+  beatrice-files:
+    build:
+      context: .
+      dockerfile: ./files/Dockerfile
+    container_name: beatrice-files
+    networks:
+      - beatrice_network
+    ports:
+      - '3001:3001'
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/beatrice
+    env_file:
+      - .env.local
+    depends_on:
+      - postgres
+
+networks:
+  beatrice_network:

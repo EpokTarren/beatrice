@@ -20,6 +20,9 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 betty
 
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./package.json
+
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/set_admin.js ./set_admin.js
 COPY --from=builder /app/files/build ./

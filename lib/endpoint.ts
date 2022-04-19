@@ -35,7 +35,7 @@ export const endpoint =
 		if (!session || session.banned)
 			return res.status(403).json({ code: 403, message: 'Please login first' });
 
-		handler(req, res, session as HandlerSession);
+		await handler(req, res, session as HandlerSession);
 	};
 
 export type AdminEndpointHandler = (
@@ -65,5 +65,5 @@ export const adminEndpoint =
 		if (typeof req.query.user !== 'string')
 			return res.status(404).json({ code: 404, message: 'User not found' });
 
-		handler(req, res, session as HandlerSession, req.query.user);
+		await handler(req, res, session as HandlerSession, req.query.user);
 	};

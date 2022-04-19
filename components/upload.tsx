@@ -10,6 +10,10 @@ export const Upload: FunctionComponent = () => {
 	const [err, setErr] = useState<ErrProps['err']>();
 	const [rows, setRows] = useState<JSX.Element[]>([]);
 
+	const fileServerUrl =
+		process.env.NEXT_PUBLIC_BEATRICE_FILES_URL?.replace(/\/$/, '') ||
+		`${window.location.protocol}//${window.location.host}`;
+
 	const stage = (event: ChangeEvent<HTMLInputElement>) => {
 		stageFile(event.target.files?.[0]);
 	};
@@ -56,7 +60,7 @@ export const Upload: FunctionComponent = () => {
 		(location: string): MouseEventHandler =>
 		(event) => {
 			event.preventDefault();
-			const url = `${window.location.protocol}//${window.location.hostname}${location}`;
+			const url = `${fileServerUrl}${location}`;
 			navigator.clipboard.writeText(url).then(
 				() => setMsg({ title: 'URL copied', message: url, clear }),
 				() => setErr({ message: 'Unable to copy URL' }),
@@ -72,7 +76,7 @@ export const Upload: FunctionComponent = () => {
 			setRows(
 				files.map((location: string) => (
 					<li key={location}>
-						<a href={location} target="_blank" rel="noreferrer">
+						<a href={`${fileServerUrl}${location}`} target="_blank" rel="noreferrer">
 							{location}
 						</a>
 						<button onClick={copy(location)}>copy</button>

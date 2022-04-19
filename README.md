@@ -29,13 +29,16 @@ DISCORD_CLIENT_SECRET=YOUR_APPLICATION_SECRET_HERE
 GITHUB_CLIENT_ID=YOUR_APPLICATION_ID_HERE
 GITHUB_CLIENT_SECRET=YOUR_APPLICATION_SECRET_HERE
 BEATRICE_FILES_PORT=3001
+NEXT_PUBLIC_BEATRICE_FILES_URL=http://localhost:3001
 BEATRICE_FILES_USER=tarren
 ALLOW_SIGN_UP=TRUE
 ```
 
 _Note: any changes to the env file require a restart._
 
-_Note: for all the below replace `http://localhost:3000` with your desired url if in production._
+_Note: for all configuration replace `http://localhost:3000` with your url for the server._
+
+_Note: for all configuration replace `http://localhost:3001` with your url for the file only server ._
 
 `DATABASE_URL` needs to be URL encoded if you have any URL insafe characters.
 

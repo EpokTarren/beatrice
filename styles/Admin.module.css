@@ -7,11 +7,21 @@
 	padding: 0;
 }
 
-.files {
+.files,
+.bans {
 	list-style: none;
 }
 
 .files > li {
 	display: grid;
 	grid-template-columns: 1fr auto auto;
+}
+
+.bans > li {
+	display: grid;
+	padding: 1em;
+	margin: 0.5em;
+	border-radius: 1em;
+	border: currentColor 1pt solid;
+	grid-template-columns: 10ch 1fr;
 }

@@ -3,9 +3,10 @@ import type { NextPage } from 'next';
 import { useSession } from 'next-auth/react';
 import { FunctionComponent, useState } from 'react';
 
-import type { File, User } from '@prisma/client';
 import styles from '../styles/Admin.module.css';
 import { Err, ErrProps } from '../components/error';
+import type { BannedIP, File, User } from '@prisma/client';
+import { Message, MessageProps } from '../components/message';
 import { Confirmation, ConfirmationProps } from '../components/confimation';
 
 interface UserDetailProps {
@@ -40,9 +41,35 @@ const Admin: NextPage = () => {
 	const [username, setUsername] = useState('');
 	const [user, setUser] = useState<User | undefined>();
 	const [files, setFiles] = useState<File[] | undefined>();
+	const [ips, setIps] = useState<BannedIP[] | undefined>();
 
 	const [err, setErr] = useState<ErrProps['err']>();
-	const [confirmation, setConfirmation] = useState<ConfirmationProps['msg'] | undefined>();
+	const [confirmation, setConfirmation] = useState<ConfirmationProps['msg']>();
+	const [message, setMessage] = useState<MessageProps['msg']>();
+
+	const searchIps = async () => {
+		const response = await fetch(`/api/admin/user/${username}/banned_ips`);
+		const data = await response.json();
+
+		console.log(data);
+
+		if (response.ok) setIps(data.ips);
+		else {
+			setIps(undefined);
+			setErr(data);
+		}
+	};
+
+	const searchFiles = async () => {
+		const response = await fetch(`/api/admin/user/${username}/files`);
+		const data = await response.json();
+
+		if (response.ok) setFiles(data.files);
+		else {
+			setFiles(undefined);
+			setErr(data);
+		}
+	};
 
 	const search = async () => {
 		const response = await fetch('/api/admin/user/' + username);
@@ -50,15 +77,8 @@ const Admin: NextPage = () => {
 
 		if (response.ok) {
 			setUser(res?.user);
-
-			const fileResponse = await fetch(`/api/admin/user/${username}/files`);
-			const fileData = await fileResponse.json();
-
-			if (fileResponse.ok) setFiles(fileData.files);
-			else {
-				setFiles(undefined);
-				setErr(res);
-			}
+			searchFiles();
+			searchIps();
 		} else {
 			setUser(undefined);
 			setErr(res);
@@ -70,7 +90,63 @@ const Admin: NextPage = () => {
 			res.ok ? search() : setErr(await res.json()),
 		);
 
-	const ipBan = (_ip: string) => () => setErr({ message: 'Unimplemented' });
+	const ipBan = (ip: string) => () => {
+		setConfirmation({
+			title: 'Are you sure you want to ban this IP?',
+			message: `IP: ${ip}`,
+			response: async (answer) => {
+				setConfirmation(undefined);
+				if (!answer) return;
+
+				if (!user) return setErr({ message: 'No user selected, unable to take action.' });
+
+				const response = await fetch(`/api/admin/user/${user.username}/ip_ban`, {
+					method: 'POST',
+					body: ip,
+				});
+
+				if (!response.ok) setErr(await response.json());
+				else {
+					setMessage(undefined);
+					setMessage({
+						ms: 20000,
+						title: 'Succesfully banned IP',
+						message: `${ip} has been banned, note that banning an IP does not automatically ban the user.`,
+						clear: () => setMessage(undefined),
+					});
+				}
+			},
+		});
+	};
+
+	const ipUnban = (ban: BannedIP) => () =>
+		setConfirmation({
+			title: 'Are you sure you want to unban this IP?',
+			message: `IP: ${ban.ip}`,
+			response: async (answer) => {
+				setConfirmation(undefined);
+				if (!answer) return;
+
+				if (!user) return setErr({ message: 'No user selected, unable to take action.' });
+
+				const response = await fetch(`/api/admin/user/${user.username}/ip_unban`, {
+					method: 'PATCH',
+					body: ban.id.toString(),
+				});
+
+				if (!response.ok) setErr(await response.json());
+				else {
+					setMessage(undefined);
+					setMessage({
+						ms: 20000,
+						title: 'Succesfully unbanned IP',
+						message: `${ban.ip} has been unbanned.`,
+						clear: () => setMessage(undefined),
+					});
+					searchIps();
+				}
+			},
+		});
 
 	const eventHandler = (event: 'ban' | 'unban' | 'deleteContent' | 'banIp') => {
 		switch (event) {
@@ -114,9 +190,73 @@ const Admin: NextPage = () => {
 				});
 
 			case 'banIp':
-				return setErr({ message: 'Unimplemented' });
+				return setConfirmation({
+					title: `Are you sure you want to ban all of the user ${user?.username} IP adresses?`,
+					message:
+						'This action is reversible by unbanning each IP manually, this will not delete any files.',
+					response: async (answer) => {
+						setConfirmation(undefined);
+
+						if (!answer) return;
+						if (!files) return setErr({ message: 'Unable to load the users files.' });
+
+						const toBan = [
+							...files.reduce((set, { ip }) => {
+								set.add(ip);
+								return set;
+							}, new Set<string>()),
+						];
+
+						const failed: string[] = [];
+						const succesfull: string[] = [];
+
+						await Promise.all(
+							toBan.map(async (ip) => {
+								const response = await fetch(`/api/admin/user/${user?.username}/ip_ban`, {
+									method: 'POST',
+									body: ip,
+								});
+
+								if (!response.ok) failed.push(ip);
+								else succesfull.push(ip);
+							}),
+						);
+
+						if (failed.length)
+							setErr({ message: 'Failed to ban the following ips:\n' + failed.join('\n') });
+
+						if (succesfull.length) {
+							setMessage(undefined);
+							setMessage({
+								title: 'Banned the following ips',
+								message: succesfull.join('\n'),
+								clear: () => setMessage(undefined),
+							});
+						}
+
+						searchIps();
+					},
+				});
 		}
 	};
+
+	const BanDetails = (ban: BannedIP) => (
+		<li key={ban.id}>
+			<span>Active:</span>
+			<span>{ban.active ? 'true' : 'false'}</span>
+
+			<span>Date:</span>
+			<span>{ban.createdAt?.toString() || 'Unkown'}</span>
+
+			<span>Expired:</span>
+			<span>{ban?.expiredAt?.toString() || 'IP is still banned'}</span>
+
+			<span>IP</span>
+			<span>{ban.ip}</span>
+
+			{ban.active ? <button onClick={ipUnban(ban)}>Unban</button> : <></>}
+		</li>
+	);
 
 	const FileDetails = (file: File) => (
 		<li key={file.url}>
@@ -136,9 +276,13 @@ const Admin: NextPage = () => {
 
 				<Err err={err} />
 
+				<Message msg={message} />
+
 				<UserDetails user={user} eventHandler={eventHandler} />
 
 				<Confirmation msg={confirmation} />
+
+				<ul className={styles.bans}>{ips?.map(BanDetails)}</ul>
 
 				<ul className={styles.files}>{files?.map(FileDetails)}</ul>
 			</div>
@@ -155,7 +299,7 @@ export const AdminPage: FunctionComponent<AdminPageProps> = ({ children }) => {
 
 	if (status === 'loading') {
 		return <h1>Loading...</h1>;
-	} else if (session.admin) {
+	} else if (session?.admin) {
 		return <>{children}</>;
 	} else {
 		return (

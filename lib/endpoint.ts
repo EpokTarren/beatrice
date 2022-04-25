@@ -1,4 +1,6 @@
+import prisma from './prisma';
 import { isBanned } from './ipBan';
+import * as jwt from 'jsonwebtoken';
 import { getClientIp } from 'request-ip';
 import type { Session } from 'next-auth';
 import { getSession } from 'next-auth/react';
@@ -21,6 +23,9 @@ export type Handler = (
 	session: HandlerSession,
 ) => Promise<void>;
 
+const secret = process.env['NEXTAUTH_SECRET'];
+if (!secret) throw new Error('Must have a NEXTAUTH_SECRET in ENV');
+
 export const endpoint =
 	(methods: string[], handler: Handler): NextApiHandler =>
 	async (req: NextApiRequest, res: NextApiResponse<EndpointError>) => {
@@ -30,7 +35,32 @@ export const endpoint =
 		if (!methods.includes(req.method || ''))
 			return res.status(405).json({ code: 405, message: 'Method Not Allowed' });
 
-		const session = await getSession({ req });
+		let session = await getSession({ req });
+
+		const token_str = req.headers['jwt'];
+
+		if (!session && typeof token_str === 'string') {
+			try {
+				const token = jwt.verify(token_str, secret, { complete: true });
+				const payload = token.payload as jwt.JwtPayload;
+				const id = (token.payload as jwt.JwtPayload).uid;
+
+				if (typeof id === 'string')
+					await prisma.user.findUnique({ where: { id }, select: { banned: true } }).then((user) => {
+						if (user && !user.banned)
+							session = {
+								username: payload.username,
+								uid: payload.uid,
+								admin: payload.admin,
+								user: {
+									name: payload.user?.name,
+									image: payload.user?.image,
+								},
+								expires: payload.expires,
+							};
+					});
+			} catch {}
+		}
 
 		if (!session || session.banned)
 			return res.status(403).json({ code: 403, message: 'Please login first' });

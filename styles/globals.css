@@ -37,6 +37,7 @@ input {
 	color: var(--fg);
 }
 
+select:hover,
 label:hover,
 button:hover {
 	background: var(--fg);
@@ -56,6 +57,7 @@ a:hover {
 	box-sizing: border-box;
 }
 
+select,
 button,
 input {
 	background: unset;

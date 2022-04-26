@@ -6,8 +6,11 @@ const download = (filename: string, content: string) => {
 	elem.remove();
 };
 
-export const sharex = async (session: { username?: string }) => {
-	const response = await fetch('/api/jwt', { method: 'GET' }).then((res) => res.json());
+export const sharex = async ({ username }: { username?: string }) => {
+	const response = await fetch('/api/jwt', {
+		method: 'POST',
+		body: username,
+	}).then((res) => res.json());
 
 	if (response.code !== 200) return;
 
@@ -19,7 +22,7 @@ export const sharex = async (session: { username?: string }) => {
 
 	const uploader = {
 		Version: '13.3.0',
-		Name: `${session?.username}@${host}`,
+		Name: `${username}@${host}`,
 		DestinationType: 'ImageUploader, TextUploader, FileUploader',
 		RequestMethod: 'POST',
 		RequestURL: `${url}/api/upload`,
@@ -32,5 +35,5 @@ export const sharex = async (session: { username?: string }) => {
 		ErrorMessage: '$json:message$',
 	};
 
-	download(`${session?.username}.${host}.sxcu`, JSON.stringify(uploader, undefined, '\t'));
+	download(`${username}.${host}.sxcu`, JSON.stringify(uploader, undefined, '\t'));
 };

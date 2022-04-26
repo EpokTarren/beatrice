@@ -1,6 +1,7 @@
 import type { NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prisma';
 import { endpoint, EndpointError } from '../../../lib/endpoint';
+import { getUserId } from '../../../lib/getUser';
 
 export interface Success {
 	code: 200;
@@ -14,7 +15,7 @@ export default endpoint(['GET', 'DELETE'], async (req, res: NextApiResponse<Outp
 
 	const [user, filename] = req.query.path;
 
-	if (user !== session.username)
+	if (user !== session.username && (await getUserId(user)) !== session.uid)
 		return res.status(403).json({ code: 403, message: 'You do not own said file, cannot delete.' });
 
 	const url = `/${user}/${filename}`;

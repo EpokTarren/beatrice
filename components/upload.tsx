@@ -1,7 +1,9 @@
 import { Err, ErrProps } from './error';
-import { Message, MessageProps } from './message';
+import type { Username } from '@prisma/client';
 import styles from '../styles/Upload.module.css';
+import { Message, MessageProps } from './message';
 import { ChangeEvent, FunctionComponent, MouseEventHandler, useEffect, useState } from 'react';
+import { sharex } from '../lib/uploader';
 
 export const Upload: FunctionComponent = () => {
 	const [file, setFile] = useState<File | undefined>();
@@ -9,6 +11,8 @@ export const Upload: FunctionComponent = () => {
 	const [msg, setMsg] = useState<MessageProps['msg']>();
 	const [err, setErr] = useState<ErrProps['err']>();
 	const [rows, setRows] = useState<JSX.Element[]>([]);
+	const [username, setUsername] = useState<string | undefined>();
+	const [usernames, setUsernames] = useState<Username[] | undefined>();
 
 	const fileServerUrl =
 		process.env.NEXT_PUBLIC_BEATRICE_FILES_URL?.replace(/\/$/, '') ||
@@ -31,6 +35,8 @@ export const Upload: FunctionComponent = () => {
 		if (file) {
 			const body = new FormData();
 			body.append('file', file);
+
+			if (username) body.append('username', username);
 
 			fetch('/api/upload', {
 				method: 'POST',
@@ -87,8 +93,19 @@ export const Upload: FunctionComponent = () => {
 		}
 	};
 
+	const updateUsernames = () =>
+		fetch('/api/usernames')
+			.then((res) => res.json())
+			.then((res) => {
+				if (res.usernames.length > 1) {
+					setUsernames(res.usernames);
+					setUsername(res.usernames[0].username);
+				}
+			});
+
 	useEffect(() => {
 		updateRows();
+		updateUsernames();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
@@ -106,6 +123,24 @@ export const Upload: FunctionComponent = () => {
 			<button type="submit" onClick={upload}>
 				Upload
 			</button>
+
+			{usernames?.length && usernames.length > 1 ? (
+				<div>
+					<span>Post as</span>
+					<select name="username" id="username" onChange={(e) => setUsername(e.target.value)}>
+						{usernames.map(({ username }) => (
+							<option value={username} key={username}>
+								{username}
+							</option>
+						))}
+					</select>
+
+					<span>here or using</span>
+					<button onClick={() => sharex({ username })}>ShareX</button>
+				</div>
+			) : (
+				<></>
+			)}
 
 			<Err err={err} />
 

@@ -5,7 +5,7 @@ import { FunctionComponent, useState } from 'react';
 
 import styles from '../styles/Admin.module.css';
 import { Err, ErrProps } from '../components/error';
-import type { BannedIP, File, User } from '@prisma/client';
+import type { BannedIP, File, User, Username } from '@prisma/client';
 import { Message, MessageProps } from '../components/message';
 import { Confirmation, ConfirmationProps } from '../components/confimation';
 
@@ -42,16 +42,27 @@ const Admin: NextPage = () => {
 	const [user, setUser] = useState<User | undefined>();
 	const [files, setFiles] = useState<File[] | undefined>();
 	const [ips, setIps] = useState<BannedIP[] | undefined>();
+	const [usernames, setUsernames] = useState<Username[] | undefined>();
+	const [additionalUsername, setAdditionalUsername] = useState<string | undefined>();
 
 	const [err, setErr] = useState<ErrProps['err']>();
 	const [confirmation, setConfirmation] = useState<ConfirmationProps['msg']>();
 	const [message, setMessage] = useState<MessageProps['msg']>();
 
+	const searchUsernames = async () => {
+		const response = await fetch(`/api/admin/user/${username}/usernames`);
+		const data = await response.json();
+
+		if (response.ok) setUsernames(data.usernames);
+		else {
+			setIps(undefined);
+			setErr(data);
+		}
+	};
+
 	const searchIps = async () => {
 		const response = await fetch(`/api/admin/user/${username}/banned_ips`);
 		const data = await response.json();
-
-		console.log(data);
 
 		if (response.ok) setIps(data.ips);
 		else {
@@ -72,6 +83,7 @@ const Admin: NextPage = () => {
 	};
 
 	const search = async () => {
+		setErr(undefined);
 		const response = await fetch('/api/admin/user/' + username);
 		const res = await response.json();
 
@@ -79,6 +91,7 @@ const Admin: NextPage = () => {
 			setUser(res?.user);
 			searchFiles();
 			searchIps();
+			searchUsernames();
 		} else {
 			setUser(undefined);
 			setErr(res);
@@ -268,6 +281,39 @@ const Admin: NextPage = () => {
 		</li>
 	);
 
+	const addUsername = async () =>
+		setConfirmation({
+			title: 'Are you sure you want to assign an additional username?',
+			message: `Username: ${additionalUsername}`,
+			response: async (answer) => {
+				setConfirmation(undefined);
+				if (!answer) return;
+
+				if (!user) return setErr({ message: 'No user selected, unable to take action.' });
+				if (!additionalUsername)
+					return setErr({ message: 'No username selected, unable to take action.' });
+
+				const response = await fetch(`/api/admin/user/${user.username}/add_username`, {
+					method: 'POST',
+					body: additionalUsername,
+				});
+
+				if (!response.ok) setErr(await response.json());
+				else {
+					setMessage(undefined);
+
+					setMessage({
+						ms: 5000,
+						title: 'Succesfully added username',
+						message: `${additionalUsername} has been assigned to the user.`,
+						clear: () => setMessage(undefined),
+					});
+
+					searchUsernames();
+				}
+			},
+		});
+
 	return (
 		<AdminPage>
 			<div className={styles.main}>
@@ -282,9 +328,40 @@ const Admin: NextPage = () => {
 
 				<Confirmation msg={confirmation} />
 
-				<ul className={styles.bans}>{ips?.map(BanDetails)}</ul>
+				{usernames && (
+					<>
+						<h3>Usernames</h3>
+						<ul className={styles.usernames}>
+							{usernames.map((username) => (
+								<li key={username.username}>
+									<span>{username.username}</span>
+								</li>
+							))}
+						</ul>
+						<input
+							type="text"
+							name="un"
+							id="un"
+							placeholder="Additional username"
+							onChange={(e) => setAdditionalUsername(e.target.value)}
+						/>
+						<button onClick={addUsername}>Add username</button>
+					</>
+				)}
 
-				<ul className={styles.files}>{files?.map(FileDetails)}</ul>
+				{(ips?.length && (
+					<>
+						<h3>Bans</h3>
+						<ul className={styles.bans}>{ips.map(BanDetails)}</ul>
+					</>
+				)) || <></>}
+
+				{(files?.length && (
+					<>
+						<h3>Files</h3>
+						<ul className={styles.files}>{files.map(FileDetails)}</ul>
+					</>
+				)) || <></>}
 			</div>
 		</AdminPage>
 	);

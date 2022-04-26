@@ -1,7 +1,8 @@
 import mime from 'mime-types';
 
 export function contentType(fileName: string) {
-	switch (mime.lookup(fileName)) {
+	let t = mime.lookup(fileName);
+	switch (t) {
 		case false:
 		case 'text/xml':
 		case 'text/html':
@@ -11,6 +12,6 @@ export function contentType(fileName: string) {
 		case 'application/xhtml+xml':
 			return 'text/plain';
 		default:
-			return fileName;
+			return t;
 	}
 }

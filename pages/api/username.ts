@@ -3,8 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { endpoint, EndpointError } from '../../lib/endpoint';
 
 export interface Success {
-	code: number;
-	message: string;
+	code: 201;
 }
 
 export type Output = Success | EndpointError;
@@ -26,12 +25,16 @@ export default endpoint(
 		if (username !== encodeURIComponent(username))
 			return res.status(400).json({ code: 400, message: 'Please select a url safe username' });
 
-		await prisma.user
-			.update({
-				where: { id: session.uid },
-				data: { username },
-			})
-			.then(() => res.status(200).json({ code: 200, message: 'OK' }))
-			.catch(() => res.status(409).json({ code: 409, message: 'Username is already taken' }));
+		const err = () => res.status(409).json({ code: 409, message: 'Username is already taken' });
+
+		await prisma.username
+			.create({ data: { username, id: session.uid } })
+			.then(() =>
+				prisma.user
+					.update({ where: { id: session.uid }, data: { username } })
+					.then(() => res.status(200).json({ code: 201 }))
+					.catch(err),
+			)
+			.catch(err);
 	},
 );

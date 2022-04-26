@@ -1,10 +1,11 @@
 import type { NextApiResponse } from 'next';
 import { ban } from '../../../../../lib/ipBan';
 import { prisma } from '../../../../../lib/prisma';
+import { getUserId } from '../../../../../lib/getUser';
 import { adminEndpoint, EndpointError } from '../../../../../lib/endpoint';
 
 export interface Success {
-	code: number;
+	code: 200;
 }
 
 export type Output = Success | EndpointError;
@@ -13,8 +14,12 @@ export default adminEndpoint(['POST'], async (req, res: NextApiResponse<Output>,
 	if (typeof req.body !== 'string')
 		return res.status(400).send({ code: 400, message: 'Please provide an ip to ban.' });
 
+	const id = await getUserId(username);
+
+	if (!id) return res.status(404).json({ code: 404, message: 'User not found' });
+
 	await prisma.user
-		.findUnique({ where: { username } })
+		.findUnique({ where: { id } })
 		.then(async (user) => {
 			if (!user) return res.send({ code: 404, message: 'User not found.' });
 

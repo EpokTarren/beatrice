@@ -39,7 +39,10 @@ const errorPage = `<!DOCTYPE html>
 
 const respond = async (res: ServerResponse, url?: string, error = true) => {
 	if (url) {
-		const file = await prisma.file.findUnique({ where: { url }, select: { content: true } });
+		const file = await prisma.file.findUnique({
+			where: { url: decodeURIComponent(url) },
+			select: { content: true },
+		});
 
 		if (file) {
 			res

@@ -48,6 +48,13 @@ model User {
   sessions      Session[]
   File          File[]
   BannedIPs     BannedIP[]
+  Usernames     Username[]
+}
+
+model Username {
+  username String @unique
+  id       String
+  user     User   @relation(fields: [id], references: [id])
 }
 
 model BannedIP {

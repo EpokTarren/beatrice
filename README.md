@@ -137,7 +137,7 @@ docker-compose up -d --build
 
 # initialize the database
 docker exec -it beatrice-files /bin/sh
-yarn prisma db push
+yarn prisma migrate deploy
 exit
 
 # to set or revoke a users admin rights run

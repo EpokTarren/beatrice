@@ -8,7 +8,7 @@
 		"start": "npm run db:push && next start",
 		"deps": "node licenses.js > lib/licenses.ts",
 		"db:gen": "prisma generate",
-		"db:push": "prisma db push",
+		"db:push": "prisma migrate deploy",
 		"build": "npm run build:all",
 		"build:main": "npm run deps && npm run db:gen && next build",
 		"build:all": "npm run build:main && npm run build:files",

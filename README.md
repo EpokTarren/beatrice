@@ -30,6 +30,7 @@ GITHUB_CLIENT_ID=YOUR_APPLICATION_ID_HERE
 GITHUB_CLIENT_SECRET=YOUR_APPLICATION_SECRET_HERE
 BEATRICE_FILES_PORT=3001
 NEXT_PUBLIC_BEATRICE_FILES_URL=http://localhost:3001
+NEXTAUTH_URL_INTERNAL=http://localhost:3000
 BEATRICE_FILES_USER=tarren
 ALLOW_SIGN_UP=TRUE
 ```
@@ -46,6 +47,9 @@ _Note: for all configuration replace `http://localhost:3001` with your url for t
 
 You can generate `NEXTAUTH_SECRET` using `openssl rand -base64 32`,
 on Windows git ships with openssl, hence run `"C:\Program Files\Git\usr\bin\openssl.exe" rand -base64 32`.
+
+`NEXTAUTH_URL_INTERNAL` should be set to `http://localhost:3000` if your site does not have access to `NEXTAUTH_URL` such as in Docker.
+_Note: this should not be replaced with your canonical url unlike other instances of `http://localhost:3000`_
 
 `BEATRICE_FILES_PORT` sets the port for the file only server
 

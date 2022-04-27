@@ -11,6 +11,10 @@ const nextConfig = {
 				source: '/:user/:file',
 				destination: '/api/file/:user/:file',
 			},
+			{
+				source: '/l/:user/:link',
+				destination: '/api/url/:user/:link',
+			},
 		];
 	},
 };

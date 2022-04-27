@@ -49,6 +49,7 @@ model User {
   File          File[]
   BannedIPs     BannedIP[]
   Usernames     Username[]
+  URLs          URL[]
 }
 
 model Username {
@@ -80,6 +81,16 @@ model File {
   createdAt DateTime @default(now())
   url       String   @unique
   content   Bytes
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  ip        String
+}
+
+model URL {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  url       String   @unique
+  target    String
   user      User     @relation(fields: [userId], references: [id])
   userId    String
   ip        String

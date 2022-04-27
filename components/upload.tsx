@@ -77,12 +77,11 @@ export const Upload: FunctionComponent = () => {
 	};
 
 	const del = (url: string) => async () =>
-		fetch('/api/delete', {
+		fetch(`/api/delete${url}`, {
 			method: 'DELETE',
-			body: url,
 		}).then(async (res) => {
 			if (res.ok) {
-				setMsg({ title: 'File delted', message: url, clear: () => setMsg(undefined) });
+				setMsg({ title: 'File deleted', message: url, clear: () => setMsg(undefined) });
 				updateRows();
 			} else setErr(await res.json());
 		});

@@ -8,11 +8,17 @@ import { sharex } from '../lib/uploader';
 export const Upload: FunctionComponent = () => {
 	const [file, setFile] = useState<File | undefined>();
 	const [filename, setFilename] = useState<string>('');
-	const [msg, setMsg] = useState<MessageProps['msg']>();
-	const [err, setErr] = useState<ErrProps['err']>();
-	const [rows, setRows] = useState<JSX.Element[]>([]);
+
+	const [path, setPath] = useState<string>();
+	const [target, setTarget] = useState<string>();
+
 	const [username, setUsername] = useState<string | undefined>();
 	const [usernames, setUsernames] = useState<Username[] | undefined>();
+
+	const [msg, setMsg] = useState<MessageProps['msg']>();
+	const [err, setErr] = useState<ErrProps['err']>();
+	const [files, setFiles] = useState<JSX.Element[]>([]);
+	const [urls, setUrls] = useState<JSX.Element[]>([]);
 
 	const fileServerUrl =
 		process.env.NEXT_PUBLIC_BEATRICE_FILES_URL?.replace(/\/$/, '') ||
@@ -51,6 +57,25 @@ export const Upload: FunctionComponent = () => {
 		}
 	};
 
+	const shorten = () => {
+		if (!path || !target) return;
+
+		fetch('/api/shorten', {
+			method: 'POST',
+			body: JSON.stringify({ path, target, username }),
+		}).then(async (res) => {
+			if (res.ok) {
+				const response = await res.json();
+				setMsg({
+					title: 'Link shortened',
+					message: response.url,
+					clear: () => setMsg(undefined),
+				});
+				updateRows();
+			} else setErr(await res.json());
+		});
+	};
+
 	const del = (url: string) => async () =>
 		fetch('/api/delete', {
 			method: 'DELETE',
@@ -63,12 +88,11 @@ export const Upload: FunctionComponent = () => {
 		});
 
 	const copy =
-		(location: string): MouseEventHandler =>
+		(content: string): MouseEventHandler =>
 		(event) => {
 			event.preventDefault();
-			const url = `${fileServerUrl}${location}`;
-			navigator.clipboard.writeText(url).then(
-				() => setMsg({ title: 'URL copied', message: url, clear }),
+			navigator.clipboard.writeText(content).then(
+				() => setMsg({ title: 'Copied to clipboard', message: content, clear }),
 				() => setErr({ message: 'Unable to copy URL' }),
 			);
 		};
@@ -79,18 +103,45 @@ export const Upload: FunctionComponent = () => {
 		if (response.ok) {
 			const { files } = await response.json();
 
-			setRows(
+			setFiles(
 				files.map((location: string) => (
 					<li key={location}>
 						<a href={`${fileServerUrl}${location}`} target="_blank" rel="noreferrer">
 							{location}
 						</a>
-						<button onClick={copy(location)}>copy</button>
+						<button onClick={copy(`${fileServerUrl}${location}`)}>copy</button>
 						<button onClick={del(location)}>delete</button>
 					</li>
 				)),
 			);
 		}
+	};
+
+	const delUrl = (url: string) => async () =>
+		fetch(`/api/delete/l${url}`, {
+			method: 'DELETE',
+		}).then(async (res) => {
+			if (res.ok) {
+				setMsg({ title: 'URL delted', message: url, clear: () => setMsg(undefined) });
+				updateUrls();
+			} else setErr(await res.json());
+		});
+
+	const updateUrls = async () => {
+		const response = await fetch('/api/urls');
+
+		if (response.ok)
+			setUrls(
+				(await response.json())?.urls?.map((location: string) => (
+					<li key={location}>
+						<a href={`/l${location}`} target="_blank" rel="noreferrer">
+							/l{location}
+						</a>
+						<button onClick={copy(`${window.location}l${location}`)}>copy</button>
+						<button onClick={delUrl(location)}>delete</button>
+					</li>
+				)),
+			);
 	};
 
 	const updateUsernames = () =>
@@ -106,45 +157,77 @@ export const Upload: FunctionComponent = () => {
 	useEffect(() => {
 		updateRows();
 		updateUsernames();
+		updateUrls();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return (
 		<div className={styles.upload}>
-			<Message msg={msg} />
+			<div className={styles.message}>
+				<Message msg={msg} />
+			</div>
 
-			<label htmlFor="upload">
-				<input type="file" name="upload" id="upload" onChange={stage} />
-				<span>{filename ? filename : <span className={styles.default}>upload a file</span>}</span>
-			</label>
+			<div className={styles.uploadBox}>
+				<label htmlFor="upload">
+					<input type="file" name="upload" id="upload" onChange={stage} />
+					<span>{filename ? filename : <span className={styles.default}>upload a file</span>}</span>
+				</label>
 
-			<br />
+				<br />
 
-			<button type="submit" onClick={upload}>
-				Upload
-			</button>
+				<button type="submit" onClick={upload}>
+					Upload
+				</button>
+			</div>
 
-			{usernames?.length && usernames.length > 1 ? (
-				<div>
-					<span>Post as</span>
-					<select name="username" id="username" onChange={(e) => setUsername(e.target.value)}>
-						{usernames.map(({ username }) => (
-							<option value={username} key={username}>
-								{username}
-							</option>
-						))}
-					</select>
+			<div className={styles.shorten}>
+				<input
+					type="text"
+					name="url"
+					id="url"
+					placeholder="https://example.com"
+					onChange={(e) => setTarget(e.target.value)}
+				/>
+				<input
+					type="text"
+					name="url"
+					id="url"
+					placeholder="/example"
+					onChange={(e) => setPath(e.target.value)}
+				/>
 
-					<span>here or using</span>
-					<button onClick={() => sharex({ username })}>ShareX</button>
-				</div>
-			) : (
-				<></>
-			)}
+				<button onClick={shorten}>Shorten</button>
+
+				{usernames?.length && usernames.length > 1 ? (
+					<div>
+						<span>Post as</span>
+						<select name="username" id="username" onChange={(e) => setUsername(e.target.value)}>
+							{usernames.map(({ username }) => (
+								<option value={username} key={username}>
+									{username}
+								</option>
+							))}
+						</select>
+
+						<br />
+						<span>or using</span>
+						<button onClick={() => sharex({ username })}>ShareX</button>
+					</div>
+				) : (
+					<></>
+				)}
+			</div>
 
 			<Err err={err} />
 
-			<ul>{rows}</ul>
+			<ul>
+				<h3>Files</h3>
+				{files}
+			</ul>
+			<ul>
+				<h3>Links</h3>
+				{urls}
+			</ul>
 		</div>
 	);
 };

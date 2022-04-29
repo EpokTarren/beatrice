@@ -18,6 +18,11 @@
 	grid-template-columns: 1fr auto auto;
 }
 
+.files > li > div {
+	display: grid;
+	grid-template-columns: 10ch 1fr;
+}
+
 .bans > li {
 	display: grid;
 	padding: 1em;

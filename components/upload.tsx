@@ -54,7 +54,11 @@ export const Upload: FunctionComponent = () => {
 			}).then(async (res) => {
 				if (res.ok) {
 					const response = await res.json();
-					setMsg({ title: 'File uploaded', message: response.url, clear: () => setMsg(undefined) });
+					const url = `${fileServerUrl}${response.url}`;
+					navigator.clipboard.writeText(url).then(
+						() => setMsg({ title: 'File URL copied to clipboard', message: url, clear }),
+						() => setErr({ message: 'File uploaded but unable to copy file URL to clipboard' }),
+					);
 					updateRows();
 				} else setErr(await res.json());
 			});
@@ -70,12 +74,12 @@ export const Upload: FunctionComponent = () => {
 		}).then(async (res) => {
 			if (res.ok) {
 				const response = await res.json();
-				setMsg({
-					title: 'Link shortened',
-					message: response.url,
-					clear: () => setMsg(undefined),
-				});
-				updateRows();
+				const url = `${fileServerUrl}${response.url}`;
+				navigator.clipboard.writeText(url).then(
+					() => setMsg({ title: 'URL copied to clipboard', message: url, clear }),
+					() => setErr({ message: 'URL shortened but unable to copy URL to clipboard' }),
+				);
+				updateUrls();
 			} else setErr(await res.json());
 		});
 	};
@@ -125,7 +129,7 @@ export const Upload: FunctionComponent = () => {
 			method: 'DELETE',
 		}).then(async (res) => {
 			if (res.ok) {
-				setMsg({ title: 'URL delted', message: url, clear: () => setMsg(undefined) });
+				setMsg({ title: 'URL deleted', message: url, clear: () => setMsg(undefined) });
 				updateUrls();
 			} else setErr(await res.json());
 		});

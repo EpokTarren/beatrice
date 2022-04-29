@@ -24,6 +24,10 @@ export const Upload: FunctionComponent = () => {
 		process.env.NEXT_PUBLIC_BEATRICE_FILES_URL?.replace(/\/$/, '') ||
 		`${window.location.protocol}//${window.location.host}`;
 
+	const redirectServerUrl =
+		process.env.NEXT_PUBLIC_BEATRICE_REDIRECT_URL?.replace(/\/$/, '') ||
+		`${window.location.protocol}//${window.location.host}/l`;
+
 	const stage = (event: ChangeEvent<HTMLInputElement>) => {
 		stageFile(event.target.files?.[0]);
 	};
@@ -133,10 +137,10 @@ export const Upload: FunctionComponent = () => {
 			setUrls(
 				(await response.json())?.urls?.map((location: string) => (
 					<li key={location}>
-						<a href={`/l${location}`} target="_blank" rel="noreferrer">
+						<a href={`${redirectServerUrl}${location}`} target="_blank" rel="noreferrer">
 							/l{location}
 						</a>
-						<button onClick={copy(`${window.location}l${location}`)}>copy</button>
+						<button onClick={copy(`${redirectServerUrl}${location}`)}>copy</button>
 						<button onClick={delUrl(location)}>delete</button>
 					</li>
 				)),

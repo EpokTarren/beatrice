@@ -4,7 +4,7 @@
 [next.js]: https://nextjs.org/
 [react]: https://reactjs.org/
 
-Beatrice is a file upload service written in [TypeScript] using [React] and with [Next.js] as the backend framework.
+Beatrice is a file upload and URL shortening service written in [TypeScript] using [React] and with [Next.js] as the framework.
 
 ## Getting Started
 
@@ -14,7 +14,7 @@ Beatrice is a file upload service written in [TypeScript] using [React] and with
 [postgresql]: https://www.postgresql.org/
 [pgimg]: https://hub.docker.com/_/postgres
 
-You need [Node.js]; [yarn]; and [Postgresql] to run this project locally, or [Docker] to run it in a containerized enviorment.
+You need [Node.js]; [yarn]; and [Postgresql] to run this project locally, or [Docker] to run it in a containerized environment.
 
 To start a [Postgresql] server see [this docker image][pgimg] or to run locally see the [Postgresql website][postgresql].
 
@@ -29,7 +29,9 @@ DISCORD_CLIENT_SECRET=YOUR_APPLICATION_SECRET_HERE
 GITHUB_CLIENT_ID=YOUR_APPLICATION_ID_HERE
 GITHUB_CLIENT_SECRET=YOUR_APPLICATION_SECRET_HERE
 BEATRICE_FILES_PORT=3001
+BEATRICE_REDIRECT_PORT=3002
 NEXT_PUBLIC_BEATRICE_FILES_URL=http://localhost:3001
+NEXT_PUBLIC_BEATRICE_REDIRECT_URL=http://localhost:3002
 NEXTAUTH_URL_INTERNAL=http://localhost:3000
 BEATRICE_FILES_USER=tarren
 ALLOW_SIGN_UP=TRUE
@@ -41,7 +43,9 @@ _Note: for all configuration replace `http://localhost:3000` with your url for t
 
 _Note: for all configuration replace `http://localhost:3001` with your url for the file only server ._
 
-`DATABASE_URL` needs to be URL encoded if you have any URL insafe characters.
+_Note: for all configuration replace `http://localhost:3002` with your url for the redirect server ._
+
+`DATABASE_URL` needs to be URL encoded if you have any URL unsafe characters.
 
 `ALLOW_SIGN_UP=FALSE` will disallow any new sign ups.
 
@@ -53,7 +57,9 @@ _Note: this should not be replaced with your canonical url unlike other instance
 
 `BEATRICE_FILES_PORT` sets the port for the file only server
 
-`BEATRICE_FILES_USER` sets a user, whose files will be served on the file only server at host/file.ext as well as host/user/file.ext.
+`BEATRICE_FILES_PORT` sets the port for the url only server, this is launched by the same command as the file only server
+
+`BEATRICE_FILES_USER` sets a user, whose files will be served on the file only server at host/file.ext as well as host/user/file.ext. This also applies to shortened links with the redirect server.
 
 [discord]: https://discord.com/
 [developers/applications]: https://discord.com/developers/applications
@@ -78,10 +84,10 @@ git clone https://github.com/EpokTarren/beatrice.git
 
 cd beatrice
 
-# install dependecies
+# install dependencies
 yarn install --frozen-lockfile
 
-# you need DATABASE_URL url in your enviorment
+# you need DATABASE_URL url in your environment
 
 # Unix
 export "DATABASE_URL=postgresql://user:password@localhost:port/db"
@@ -104,21 +110,20 @@ Open [http://localhost:3000] with your browser to see the result.
 ## Installation
 
 [nginx]: https://www.nginx.com/
-[revese proxy]: https://en.wikipedia.org/wiki/Reverse_proxy
+[reverse proxy]: https://en.wikipedia.org/wiki/Reverse_proxy
 
-The commands below will start a server at [http://localhost:3000], if you wish to serve this publicly use a [revese proxy] such as [NGINX].
+The commands below will start the server at [http://localhost:3000], the file only server at http://localhost:3001, and the URL redirect server at http://localhost:3002, unless ports have been changed in the `.env.local` or using [Docker].
+If you wish to serve this publicly use a [reverse proxy] such as [NGINX].
 
 [article]: https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/
 [let’s encrypt]: https://letsencrypt.org/sv/
 [cf nginx]: https://www.digitalocean.com/community/tutorials/how-to-host-a-website-using-cloudflare-and-nginx-on-ubuntu-20-04
 [cloudflare]: https://www.cloudflare.com/
 
-It is however not recommended to do this without HTTPS see [this article][article] on how to get an SSL certificate using [Let’s Encrypt] or [this][cf nginx] for using [CloudFlare] with [NGINX].
+It is not recommended to do this without HTTPS see [this article][article] on how to get an SSL certificate using [Let’s Encrypt] or [this][cf nginx] for using [CloudFlare] with [NGINX].
 
-To serve to whole site at `domain.tld` over HTTP do:
-
-_Note: it is recommended to only serve the full site on youre local network, especially if signups are on, you do not want strangers to use your server to host maliocious or illegal content._
-_Instead serve your files publically using the file only server_
+_Note: it is recommended to only serve the full site on your local network, especially if sign-ups are on, you do not want strangers to use your server to host malicious or illegal content._
+_Instead serve your files publicly using the file only server_
 
 ### Docker
 
@@ -174,12 +179,12 @@ git clone https://github.com/EpokTarren/beatrice.git
 
 cd beatrice
 
-# install dependecies
+# install dependencies
 yarn install --frozen-lockfile
 
 yarn build:all
 
-# you need DATABASE_URL url in your enviorment
+# you need DATABASE_URL url in your environment
 
 # Unix
 export "DATABASE_URL=postgresql://user:password@localhost:port/db"

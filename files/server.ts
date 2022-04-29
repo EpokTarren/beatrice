@@ -3,9 +3,6 @@ import { join } from 'path';
 
 dotenv.config({ path: join(__dirname, '../../../.env.local') }).parsed;
 
-const port = Number(process.env['PORT'] || 3001);
-const user = process.env['BEATRICE_FILES_USER'];
-
 import { prisma } from '../lib/prisma';
 import { contentType } from '../lib/contentType';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
@@ -61,6 +58,8 @@ const respond = async (res: ServerResponse, url?: string, error = true) => {
 const parseUrl = (url?: string): string | undefined =>
 	url?.match(/^(\/[^\/\s\n]+\/[^\/\s\n]+)\/?$/)?.[1];
 
+const user = process.env['BEATRICE_FILES_USER'];
+
 const handler: (req: IncomingMessage, res: ServerResponse) => void = user
 	? (() => {
 			const prefix = `/${user}`;
@@ -72,4 +71,40 @@ const handler: (req: IncomingMessage, res: ServerResponse) => void = user
 	  })()
 	: (req, res) => respond(res, parseUrl(req.url));
 
+const port = Number(process.env['BEATRICE_FILES_PORT'] || 3001);
 createServer(handler).listen(port);
+console.log('Listening for file requests on port', port);
+
+const redirect = async (res: ServerResponse, url?: string, error = true) => {
+	if (url) {
+		const target = await prisma.uRL.findUnique({
+			where: { url: decodeURIComponent(url) },
+			select: { target: true },
+		});
+
+		if (target) {
+			res.writeHead(301, { Location: target.target }).write('');
+			return new Promise((resolve) => res.end(resolve));
+		}
+	}
+
+	if (error) {
+		res.writeHead(404, { 'Content-Type': 'text/html' }).write(errorPage);
+		res.end();
+	}
+};
+
+const urlHandler: (req: IncomingMessage, res: ServerResponse) => void = user
+	? (() => {
+			const prefix = `/${user}`;
+
+			return async (req, res) => {
+				if (req.url) await redirect(res, parseUrl(prefix + req.url), false);
+				if (!res.writableEnded) redirect(res, parseUrl(req.url));
+			};
+	  })()
+	: (req, res) => redirect(res, parseUrl(req.url));
+
+const urlPort = Number(process.env['BEATRICE_REDIRECT_PORT'] || 3002);
+createServer(urlHandler).listen(urlPort);
+console.log('Listening for url requests on port', urlPort);

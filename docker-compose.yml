@@ -32,6 +32,7 @@ services:
       - beatrice_network
     ports:
       - '3001:3001'
+      - '3002:3002'
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/beatrice
     env_file:

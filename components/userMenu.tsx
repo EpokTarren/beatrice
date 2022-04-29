@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import Link from 'next/link';
 import { Login } from './login';
 import { sharex } from '../lib/uploader';
 import { FunctionComponent } from 'react';
@@ -21,6 +22,19 @@ export const UserMenu: FunctionComponent = () => {
 					</a>
 
 					<div className={styles.dropdown}>
+						{session.admin ? (
+							<>
+								<hr />
+								<span>
+									<Link href="/admin">
+										<a>Dashboard</a>
+									</Link>
+								</span>
+							</>
+						) : (
+							<></>
+						)}
+
 						<hr />
 						<span>Link account</span>
 						<Login />

@@ -131,14 +131,17 @@ This section requires [Docker] to be installed.
 
 You should not set a `DATABASE_URL` in `.env.local` if using the below since this will be done for you, the database will not be exposed over the network.
 
-_Note: if you already have a postgresql server you wish to use, remove postgres block as well as the `depends_on` blocks from the other containers, and do set `DATABASE_URL`._
+If you want to make any changes to the docker image, make a copy of `docker-compose.yml` and make any edits,
+replace `docker-compose.yml` with your new docker-compose files name in the instructions below.
+If you have a [postgresql] server you wish to use, remove postgres block as well as the `depends_on` blocks from the other containers,
+and set `DATABASE_URL` to your server.
 
 ```bash
 git clone https://github.com/EpokTarren/beatrice.git
 
 cd beatrice
 
-docker-compose up -d --build
+docker-compose --file docker-compose.yml up -d --build
 
 # initialize the database
 docker exec -it beatrice-files /bin/sh
@@ -160,8 +163,7 @@ docker-compose restart
 #### Updating
 
 ```bash
-docker-compose build
-docker-compose restart
+docker-compose --file docker-compose.yml up -d --build
 
 # run database migrations
 docker exec -it beatrice-files /bin/sh

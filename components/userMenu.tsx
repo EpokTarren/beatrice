@@ -60,7 +60,7 @@ export const UserMenu: FunctionComponent = () => {
 					} else {
 						sharex({
 							api: `${window?.location.protocol}//${window?.location.host}`,
-							url: (redirect as string) || fileServerUrl,
+							url: (redirect as string) || redirectServerUrl,
 							username: (username as string) || (session as HandlerSession).username,
 							random: !!random,
 							root: !!root,

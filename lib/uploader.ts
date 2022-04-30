@@ -40,24 +40,24 @@ export const sharex = async ({ api, url, type, root, random, username }: ShareXO
 		uploader = {
 			...common,
 			DestinationType: 'ImageUploader, TextUploader, FileUploader',
-			RequestURL: `${api.replace(/https?:\/\/|\/$/g, '')}/api/upload`,
+			RequestURL: `${api.replace(/\/$/g, '')}/api/upload`,
 			Body: 'MultipartFormData',
 			FileFormName: 'file',
-			URL: root ? `${url}/$json:filename$` : `${url}$json:url$`,
-			DeletionURL: `${api}/api/delete$json:url$`,
+			URL: root ? `${url.replace(/\/$/g, '')}/$json:filename$` : `${url}$json:url$`,
+			DeletionURL: `${api.replace(/\/$/g, '')}/api/delete$json:url$`,
 		};
 	} else {
 		uploader = {
 			...common,
 			DestinationType: 'URLShortener',
-			RequestURL: `${api.replace(/https?:\/\/|\/$/g, '')}/api/shorten`,
+			RequestURL: `${api.replace(/\/$/g, '')}/api/shorten`,
 			Body: 'JSON',
 			Data: JSON.stringify({
 				target: '$input$',
 				path: random ? '$prompt$' : undefined,
 			}),
-			URL: root ? `${url}$json:path$` : `${url}$json:url$`,
-			DeletionURL: `${api}/api/delete/l$json:url$`,
+			URL: root ? `${url.replace(/\/$/g, '')}$json:path$` : `${url}$json:url$`,
+			DeletionURL: `${api.replace(/\/$/g, '')}/api/delete/l$json:url$`,
 		};
 	}
 

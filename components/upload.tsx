@@ -4,7 +4,14 @@ import styles from '../styles/Upload.module.css';
 import { Message, MessageProps } from './message';
 import { ChangeEvent, FunctionComponent, MouseEventHandler, useEffect, useState } from 'react';
 import { sharex } from '../lib/uploader';
-import { fileServerUrl, redirectServerUrl } from '../lib/urls';
+
+const fileServerUrl =
+	process.env.NEXT_PUBLIC_BEATRICE_FILES_URL?.replace(/\/$/, '') ||
+	`${window?.location.protocol}//${window?.location.host}`;
+
+const redirectServerUrl =
+	process.env.NEXT_PUBLIC_BEATRICE_REDIRECT_URL?.replace(/\/$/, '') ||
+	`${window?.location.protocol}//${window?.location.host}/l`;
 
 export const Upload: FunctionComponent = () => {
 	const [file, setFile] = useState<File | undefined>();

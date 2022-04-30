@@ -109,9 +109,10 @@ export default endpoint(
 			return parts.length < 2 ? '' : `.${parts.pop()}`;
 		};
 
-		const filename = req.query.r
-			? file.originalFilename
-			: `${randomBytes(12).toString('base64url')}${ext(file.originalFilename)}`;
+		const filename =
+			req.query.r !== undefined
+				? `${randomBytes(4).toString('base64url')}${ext(file.originalFilename)}`
+				: file.originalFilename;
 		const url = `/${username}/${filename}`;
 
 		if (await prisma.file.findUnique({ where: { url }, select: { url: true } }))

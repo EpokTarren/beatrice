@@ -49,7 +49,7 @@ export default endpoint(
 		}
 
 		const target: string = body.target;
-		const path: string = body.path || randomBytes(12).toString('base64url');
+		const path: string = body.path || randomBytes(4).toString('base64url');
 		const url = `/${username}/${path}`;
 
 		if (await prisma.uRL.findUnique({ where: { url }, select: { url: true } }))

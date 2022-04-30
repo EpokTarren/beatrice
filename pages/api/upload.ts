@@ -1,5 +1,6 @@
 import { Writable } from 'stream';
 import requestIp from 'request-ip';
+import { randomBytes } from 'crypto';
 import { prisma } from '../../lib/prisma';
 import { getUserId } from '../../lib/getUser';
 import type { NextApiRequest, NextApiResponse } from 'next';
@@ -54,8 +55,9 @@ const parse = (req: NextApiRequest): Promise<[Fields, File]> =>
 	});
 
 export interface Success {
-	code: number;
+	code: 201;
 	url: string;
+	filename: string;
 }
 
 export type Output = Success | EndpointError;
@@ -66,12 +68,6 @@ export default endpoint(
 		const ip = requestIp.getClientIp(req);
 
 		if (!ip) return res.status(500).json({ code: 500, message: 'Unable to locate ip' });
-
-		if (typeof session.username !== 'string')
-			return res.status(401).json({ code: 401, message: 'Please set a username' });
-
-		if (typeof session.uid !== 'string')
-			return res.status(401).json({ code: 401, message: 'Invalid session' });
 
 		let file: File, fields: Fields;
 
@@ -100,17 +96,23 @@ export default endpoint(
 				});
 			}
 
-		const filename = file.newFilename;
-		const content = files.get(filename);
+		const content = files.get(file.newFilename);
+		files.delete(file.newFilename);
 
-		files.delete(filename);
-
-		if (!file.originalFilename)
+		if (!file.originalFilename?.length)
 			return res.status(500).json({ code: 500, message: 'Please provide a file name' });
 
 		if (!content) return res.status(500).json({ code: 500, message: 'File could not be read' });
 
-		const url = `/${username}/${file.originalFilename}`;
+		const ext = (filename: string) => {
+			const parts = filename.split('.');
+			return parts.length < 2 ? '' : `.${parts.pop()}`;
+		};
+
+		const filename = req.query.r
+			? file.originalFilename
+			: `${randomBytes(12).toString('base64url')}${ext(file.originalFilename)}`;
+		const url = `/${username}/${filename}`;
 
 		if (await prisma.file.findUnique({ where: { url }, select: { url: true } }))
 			return res.status(400).json({ code: 400, message: 'File already exists' });
@@ -119,6 +121,6 @@ export default endpoint(
 			return res.status(500).json({ code: 500, message: 'Unable to create file' });
 		});
 
-		res.status(201).json({ code: 201, url });
+		res.status(201).json({ code: 201, url, filename });
 	},
 );

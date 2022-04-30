@@ -18,7 +18,7 @@ You need [Node.js]; [yarn]; and [Postgresql] to run this project locally, or [Do
 
 To start a [Postgresql] server see [this docker image][pgimg] or to run locally see the [Postgresql website][postgresql].
 
-You will need a .env.local and it should look something like the below:
+You will need a `.env.local` and it should look something like the below:
 
 ```env
 DATABASE_URL=postgresql://user:password@host:port/db
@@ -57,9 +57,12 @@ _Note: this should not be replaced with your canonical url unlike other instance
 
 `BEATRICE_FILES_PORT` sets the port for the file only server
 
-`BEATRICE_FILES_PORT` sets the port for the url only server, this is launched by the same command as the file only server
+`BEATRICE_REDIRECT_PORT` sets the port for the redirect only server, this is launched alongside the file only server
 
-`BEATRICE_FILES_USER` sets a user, whose files will be served on the file only server at host/file.ext as well as host/user/file.ext. This also applies to shortened links with the redirect server.
+`BEATRICE_FILES_USER` sets a username, whose files will be served on the file only server at `/file.ext` as well as `/username/file.ext`.
+This also applies to shortened links with the redirect server.
+
+`BEATRICE_EXCLUSIVE` sets the file and redirect servers to only respond to a `/file.ext` and `/short-link` respectively with the chosen usernames files and redirects, all other requests will return a 404, including `/username/file.ext` and `/username/short-link` will return a 404.
 
 [discord]: https://discord.com/
 [developers/applications]: https://discord.com/developers/applications

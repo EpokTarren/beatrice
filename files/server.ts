@@ -59,10 +59,13 @@ const parseUrl = (url?: string): string | undefined =>
 	url?.match(/^(\/[^\/\s\n]+\/[^\/\s\n]+)\/?$/)?.[1];
 
 const user = process.env['BEATRICE_FILES_USER'];
+const exclusive = process.env['BEATRICE_EXCLUSIVE']?.[0]?.toLowerCase() === 't';
 
 const handler: (req: IncomingMessage, res: ServerResponse) => void = user
 	? (() => {
 			const prefix = `/${user}`;
+
+			if (exclusive) return (req, res) => respond(res, parseUrl(prefix + req.url));
 
 			return async (req, res) => {
 				if (req.url) await respond(res, parseUrl(prefix + req.url), false);
@@ -97,6 +100,8 @@ const redirect = async (res: ServerResponse, url?: string, error = true) => {
 const urlHandler: (req: IncomingMessage, res: ServerResponse) => void = user
 	? (() => {
 			const prefix = `/${user}`;
+
+			if (exclusive) return (req, res) => redirect(res, parseUrl(prefix + req.url));
 
 			return async (req, res) => {
 				if (req.url) await redirect(res, parseUrl(prefix + req.url), false);

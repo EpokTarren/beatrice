@@ -6,7 +6,16 @@ const download = (filename: string, content: string) => {
 	elem.remove();
 };
 
-export const sharex = async ({ username }: { username?: string }) => {
+export interface ShareXOptions {
+	api: string;
+	url: string;
+	type: 'file' | 'url';
+	root: boolean;
+	random: boolean;
+	username: string;
+}
+
+export const sharex = async ({ api, url, type, root, random, username }: ShareXOptions) => {
 	const response = await fetch('/api/jwt', {
 		method: 'POST',
 		body: username,
@@ -14,26 +23,44 @@ export const sharex = async ({ username }: { username?: string }) => {
 
 	if (response.code !== 200) return;
 
-	const url = `${window.location.protocol}//${window.location.host}`;
-	const host =
-		process.env.NEXT_PUBLIC_BEATRICE_FILES_URL?.replace(/https?:\/\/|\/$/g, '') ||
-		window.location.host;
-	const fileServerUrl = process.env.NEXT_PUBLIC_BEATRICE_FILES_URL?.replace(/\/$/, '') || url;
+	const host = url.replace(/https?:\/\/|\/$/g, '');
 
-	const uploader = {
-		Version: '13.3.0',
+	const common = {
+		Version: '13.7.0',
 		Name: `${username}@${host}`,
-		DestinationType: 'ImageUploader, TextUploader, FileUploader',
 		RequestMethod: 'POST',
-		RequestURL: `${url}/api/upload`,
+		Parameters: random ? { r: null } : undefined,
 		Headers: { jwt: response.jwt },
-		Body: 'MultipartFormData',
-		FileFormName: 'file',
-		URL: `${fileServerUrl}$json:url$`,
-		ThumbnailURL: `${fileServerUrl}$json:url$`,
-		DeletionURL: `${url}/api/delete$json:url$`,
 		ErrorMessage: '$json:message$',
 	};
 
-	download(`${username}.${host}.sxcu`, JSON.stringify(uploader, undefined, '\t'));
+	let uploader;
+
+	if (type === 'file') {
+		uploader = {
+			...common,
+			DestinationType: 'ImageUploader, TextUploader, FileUploader',
+			RequestURL: `${api.replace(/https?:\/\/|\/$/g, '')}/api/upload`,
+			Body: 'MultipartFormData',
+			FileFormName: 'file',
+			URL: root ? `${url}/$json:filename$` : `${url}$json:url$`,
+			DeletionURL: `${api}/api/delete$json:url$`,
+		};
+	} else {
+		uploader = {
+			...common,
+			DestinationType: 'URLShortener',
+			RequestURL: `${api.replace(/https?:\/\/|\/$/g, '')}/api/shorten`,
+			Body: 'JSON',
+			Data: JSON.stringify({
+				target: '$input$',
+				path: random ? '$prompt$' : undefined,
+			}),
+			URL: root ? `${url}$json:path$` : `${url}$json:url$`,
+			DeletionURL: `${api}/api/delete/l$json:url$`,
+		};
+	}
+
+	const filename = `${root ? '' : username}${random ? '.random' : ''}@${host}.sxcu`;
+	download(filename, JSON.stringify(uploader, undefined, '\t'));
 };

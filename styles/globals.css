@@ -39,7 +39,9 @@ input {
 
 select:hover,
 label:hover,
-button:hover {
+button:hover,
+input[type='submit']:hover,
+input[type='button']:hover {
 	background: var(--fg);
 	color: var(--bg);
 }

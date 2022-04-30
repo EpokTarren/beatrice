@@ -3,7 +3,6 @@ import type { Username } from '@prisma/client';
 import styles from '../styles/Upload.module.css';
 import { Message, MessageProps } from './message';
 import { ChangeEvent, FunctionComponent, MouseEventHandler, useEffect, useState } from 'react';
-import { sharex } from '../lib/uploader';
 
 export const Upload: FunctionComponent = () => {
 	const [file, setFile] = useState<File | undefined>();
@@ -215,10 +214,7 @@ export const Upload: FunctionComponent = () => {
 								</option>
 							))}
 						</select>
-
 						<br />
-						<span>or using</span>
-						<button onClick={() => sharex({ username })}>ShareX</button>
 					</div>
 				) : (
 					<></>

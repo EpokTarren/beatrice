@@ -60,3 +60,39 @@
 	margin-top: 1em;
 	align-items: center;
 }
+
+.uploaderMenu {
+	position: fixed;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	padding: 2em;
+	background: var(--bg);
+	z-index: 1;
+	overflow: auto;
+}
+
+.uploaderMenu input[type='text'] {
+	display: block;
+	width: 100%;
+}
+
+.uploaderMenu label,
+.uploaderMenu label:hover {
+	color: var(--fg);
+	font-weight: 600;
+	background: var(--bg);
+}
+
+.uploaderMenu + main {
+	pointer-events: none;
+	opacity: 0;
+}
+
+.close {
+	height: 3em;
+	width: 3em;
+	font-weight: 600;
+	border-radius: 50%;
+}

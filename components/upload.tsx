@@ -5,14 +5,6 @@ import { Message, MessageProps } from './message';
 import { ChangeEvent, FunctionComponent, MouseEventHandler, useEffect, useState } from 'react';
 import { sharex } from '../lib/uploader';
 
-const fileServerUrl =
-	process.env.NEXT_PUBLIC_BEATRICE_FILES_URL?.replace(/\/$/, '') ||
-	`${window?.location.protocol}//${window?.location.host}`;
-
-const redirectServerUrl =
-	process.env.NEXT_PUBLIC_BEATRICE_REDIRECT_URL?.replace(/\/$/, '') ||
-	`${window?.location.protocol}//${window?.location.host}/l`;
-
 export const Upload: FunctionComponent = () => {
 	const [file, setFile] = useState<File | undefined>();
 	const [filename, setFilename] = useState<string>('');
@@ -27,6 +19,14 @@ export const Upload: FunctionComponent = () => {
 	const [err, setErr] = useState<ErrProps['err']>();
 	const [files, setFiles] = useState<JSX.Element[]>([]);
 	const [urls, setUrls] = useState<JSX.Element[]>([]);
+
+	const fileServerUrl =
+		process.env.NEXT_PUBLIC_BEATRICE_FILES_URL?.replace(/\/$/, '') ||
+		`${window?.location.protocol}//${window?.location.host}`;
+
+	const redirectServerUrl =
+		process.env.NEXT_PUBLIC_BEATRICE_REDIRECT_URL?.replace(/\/$/, '') ||
+		`${window?.location.protocol}//${window?.location.host}/l`;
 
 	const stage = (event: ChangeEvent<HTMLInputElement>) => {
 		stageFile(event.target.files?.[0]);

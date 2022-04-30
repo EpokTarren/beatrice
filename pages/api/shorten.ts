@@ -24,22 +24,22 @@ export default endpoint(
 		if (typeof session.uid !== 'string')
 			return res.status(401).json({ code: 401, message: 'Invalid session' });
 
-		if (typeof req.body !== 'string')
-			return res.status(403).json({ code: 403, message: 'Invalid request' });
+		if (!req.body) return res.status(403).json({ code: 403, message: 'Invalid request' });
 
-		let body;
+		let body = req.body;
 
-		try {
-			body = JSON.parse(req.body);
-		} catch (error) {
-			return res.status(403).json({ code: 403, message: 'Invalid request' });
-		}
+		if (typeof req.body === 'string')
+			try {
+				body = JSON.parse(req.body);
+			} catch (error) {
+				return res.status(400).json({ code: 400, message: 'Invalid json' });
+			}
 
-		if (typeof body.path !== 'string')
-			return res.status(403).json({ code: 403, message: 'You must provide a path' });
+		if (typeof body?.path !== 'string')
+			return res.status(400).json({ code: 400, message: 'You must provide a path' });
 
-		if (typeof body.target !== 'string')
-			return res.status(403).json({ code: 403, message: 'You must provide a target url' });
+		if (typeof body?.target !== 'string')
+			return res.status(400).json({ code: 400, message: 'You must provide a target url' });
 
 		const path: string = body.path;
 		const target: string = body.target;

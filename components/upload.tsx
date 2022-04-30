@@ -4,7 +4,6 @@ import styles from '../styles/Upload.module.css';
 import { Message, MessageProps } from './message';
 import { ChangeEvent, FunctionComponent, MouseEventHandler, useEffect, useState } from 'react';
 import { sharex } from '../lib/uploader';
-import { fileServerUrl, redirectServerUrl } from '../lib/urls';
 
 export const Upload: FunctionComponent = () => {
 	const [file, setFile] = useState<File | undefined>();
@@ -20,6 +19,14 @@ export const Upload: FunctionComponent = () => {
 	const [err, setErr] = useState<ErrProps['err']>();
 	const [files, setFiles] = useState<JSX.Element[]>([]);
 	const [urls, setUrls] = useState<JSX.Element[]>([]);
+
+	const fileServerUrl =
+		process.env.NEXT_PUBLIC_BEATRICE_FILES_URL?.replace(/\/$/, '') ||
+		`${window?.location.protocol}//${window?.location.host}`;
+
+	const redirectServerUrl =
+		process.env.NEXT_PUBLIC_BEATRICE_REDIRECT_URL?.replace(/\/$/, '') ||
+		`${window?.location.protocol}//${window?.location.host}/l`;
 
 	const stage = (event: ChangeEvent<HTMLInputElement>) => {
 		stageFile(event.target.files?.[0]);

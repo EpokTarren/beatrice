@@ -8,6 +8,7 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"esModuleInterop": true,
+		"downlevelIteration": true,
 		"module": "CommonJS",
 		"moduleResolution": "node"
 	}

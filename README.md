@@ -28,6 +28,7 @@ DISCORD_CLIENT_ID=YOUR_APPLICATION_ID_HERE
 DISCORD_CLIENT_SECRET=YOUR_APPLICATION_SECRET_HERE
 GITHUB_CLIENT_ID=YOUR_APPLICATION_ID_HERE
 GITHUB_CLIENT_SECRET=YOUR_APPLICATION_SECRET_HERE
+BEATRICE_CACHE_TIME=5
 BEATRICE_FILES_PORT=3001
 BEATRICE_REDIRECT_PORT=3002
 NEXT_PUBLIC_BEATRICE_FILES_URL=http://localhost:3001
@@ -54,6 +55,10 @@ on Windows git ships with openssl, hence run `"C:\Program Files\Git\usr\bin\open
 
 `NEXTAUTH_URL_INTERNAL` should be set to `http://localhost:3000` if your site does not have access to `NEXTAUTH_URL` such as in Docker.
 _Note: this should not be replaced with your canonical url unlike other instances of `http://localhost:3000`_
+
+`BEATRICE_CACHE_TIME` caches files and urls for n minutes, default is 0.
+If set to anything else files and redirects will continue to be served for that many minutes by the dedicated file/redirect hosts,
+nothing will be evicted from the cache unless the server is restarted.
 
 `BEATRICE_FILES_PORT` sets the port for the file only server
 

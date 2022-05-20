@@ -54,11 +54,15 @@ You can generate `NEXTAUTH_SECRET` using `openssl rand -base64 32`,
 on Windows git ships with openssl, hence run `"C:\Program Files\Git\usr\bin\openssl.exe" rand -base64 32`.
 
 `NEXTAUTH_URL_INTERNAL` should be set to `http://localhost:3000` if your site does not have access to `NEXTAUTH_URL` such as in Docker.
+
 _Note: this should not be replaced with your canonical url unlike other instances of `http://localhost:3000`_
 
 `BEATRICE_CACHE_TIME` caches files and urls for n minutes, default is 0.
 If set to anything else files and redirects will continue to be served for that many minutes by the dedicated file/redirect hosts,
 nothing will be evicted from the cache unless the server is restarted.
+This is a server side only cache and will not cache on the client machine.
+
+`BEATRICE_MAX_AGE` sets the `Cache-Control` header to `max-age=n` where n is the value of the environment variable representing a number of seconds, if it is not set the `Cache-Control` header will not be set. The file will be available for n minutes to the client even if deleted server side.
 
 `BEATRICE_FILES_PORT` sets the port for the file only server
 

@@ -34,6 +34,9 @@ const errorPage = `<!DOCTYPE html>
 	</body>
 </html>`.replace(/\t|\n/g, '');
 
+const maxAge = parseInt(process.env['BEATRICE_MAX_AGE'] || '', 10);
+const cacheControl = isFinite(maxAge) && maxAge > 0 ? { 'Cache-Control': `max-age=${maxAge}` } : {};
+
 const respond = async (res: ServerResponse, url?: string, error = true) => {
 	if (url) {
 		const file = await prisma.file.findUnique({
@@ -43,7 +46,10 @@ const respond = async (res: ServerResponse, url?: string, error = true) => {
 
 		if (file) {
 			res
-				.writeHead(200, { 'Content-Type': contentType(url.split('/').pop() || '') })
+				.writeHead(200, {
+					...cacheControl,
+					'Content-Type': contentType(url.split('/').pop() || ''),
+				})
 				.write(file.content);
 			return new Promise((resolve) => res.end(resolve));
 		}
@@ -86,7 +92,7 @@ const redirect = async (res: ServerResponse, url?: string, error = true) => {
 		});
 
 		if (target) {
-			res.writeHead(301, { Location: target.target }).write('');
+			res.writeHead(301, { ...cacheControl, Location: target.target }).write('');
 			return new Promise((resolve) => res.end(resolve));
 		}
 	}

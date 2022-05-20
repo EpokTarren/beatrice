@@ -2,6 +2,9 @@ import { prisma } from '../../../lib/prisma';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { EndpointError } from '../../../lib/endpoint';
 
+const maxAge = parseInt(process.env['BEATRICE_MAX_AGE'] || '', 10);
+const cacheControl = isFinite(maxAge) && maxAge > 0 ? `max-age=${maxAge}` : undefined;
+
 export default async function handler(
 	req: NextApiRequest,
 	res: NextApiResponse<string | EndpointError>,
@@ -16,6 +19,11 @@ export default async function handler(
 	const url = `/${user}/${filename}`;
 	const redirect = await prisma.uRL.findUnique({ where: { url }, select: { target: true } });
 
-	if (redirect) res.status(301).setHeader('Location', redirect.target).send('');
-	else res.status(404).json({ code: 404, message: 'URL not found' });
+	if (redirect) {
+		if (cacheControl) res.setHeader('Cache-Control', cacheControl);
+
+		return res.status(301).setHeader('Location', redirect.target).send('');
+	}
+
+	res.status(404).json({ code: 404, message: 'URL not found' });
 }

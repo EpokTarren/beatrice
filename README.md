@@ -18,6 +18,8 @@ You need [Node.js]; [yarn]; and [Postgresql] to run this project locally, or [Do
 
 To start a [Postgresql] server see [this docker image][pgimg] or to run locally see the [Postgresql website][postgresql].
 
+## Configuration
+
 You will need a `.env.local` and it should look something like the below:
 
 ```env
@@ -40,11 +42,7 @@ ALLOW_SIGN_UP=TRUE
 
 _Note: any changes to the env file require a restart._
 
-_Note: for all configuration replace `http://localhost:3000` with your url for the server._
-
-_Note: for all configuration replace `http://localhost:3001` with your url for the file only server ._
-
-_Note: for all configuration replace `http://localhost:3002` with your url for the redirect server ._
+_Note: for all configuration replace `http://localhost:3000` with your url for the main server, replace `http://localhost:3001` with your url for the file only server, and replace `http://localhost:3002` with your url for the redirect server ._
 
 `DATABASE_URL` needs to be URL encoded if you have any URL unsafe characters.
 

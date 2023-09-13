@@ -7,12 +7,14 @@ import styles from '../styles/Home.module.css';
 import { Username } from '../components/username';
 import { Upload } from '../components/upload';
 import { Login } from '../components/login';
+import { HandlerSession } from '../lib/endpoint';
 
 const HomePage: FunctionComponent = () => {
 	const { data: session } = useSession();
 
 	if (session) {
-		const Page: FunctionComponent = () => (session.username ? <Upload /> : <Username />);
+		const Page: FunctionComponent = () =>
+			(session as HandlerSession).username ? <Upload /> : <Username />;
 		return <Page />;
 	}
 

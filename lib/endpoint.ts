@@ -35,7 +35,7 @@ export const endpoint =
 		if (!methods.includes(req.method || ''))
 			return res.status(405).json({ code: 405, message: 'Method Not Allowed' });
 
-		let session = await getSession({ req });
+		let session = (await getSession({ req })) as HandlerSession & { banned?: boolean };
 
 		const token_str = req.headers['jwt'];
 
@@ -84,7 +84,7 @@ export const adminEndpoint =
 		if (!methods.includes(req.method || ''))
 			return res.status(405).json({ code: 405, message: 'Method Not Allowed' });
 
-		const session = await getSession({ req });
+		const session = (await getSession({ req })) as HandlerSession & { banned?: boolean };
 
 		if (!session || session.banned || !session.admin)
 			return res.status(403).json({

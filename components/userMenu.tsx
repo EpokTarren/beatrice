@@ -157,13 +157,13 @@ export const UserMenu: FunctionComponent = () => {
 					<div className={styles.has_dropdown}>
 						<a href="#" onClick={(e) => e.preventDefault()}>
 							<div className={styles.pfp_container}>
-								<span>{session?.username as string}</span>
+								<span>{(session as HandlerSession)?.username as string}</span>
 								<img className={styles.pfp} src={session?.user?.image ?? ''} alt="" />
 							</div>
 						</a>
 
 						<div className={styles.dropdown}>
-							{session.admin ? (
+							{(session as HandlerSession).admin ? (
 								<>
 									<hr />
 									<span>

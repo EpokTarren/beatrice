@@ -8,6 +8,7 @@ import { Err, ErrProps } from '../components/error';
 import type { BannedIP, File, URL, User, Username } from '@prisma/client';
 import { Message, MessageProps } from '../components/message';
 import { Confirmation, ConfirmationProps } from '../components/confimation';
+import { HandlerSession } from '../lib/endpoint';
 
 interface UserDetailProps {
 	user?: User;
@@ -474,7 +475,7 @@ export const AdminPage: FunctionComponent<AdminPageProps> = ({ children }) => {
 
 	if (status === 'loading') {
 		return <h1>Loading...</h1>;
-	} else if (session?.admin) {
+	} else if ((session as HandlerSession)?.admin) {
 		return <>{children}</>;
 	} else {
 		return (
